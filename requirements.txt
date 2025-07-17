@@ -1,0 +1,5 @@
+flask
+google-cloud-aiplatform>=1.14.0
+google-auth
+google-auth-oauthlib
+vertexai
