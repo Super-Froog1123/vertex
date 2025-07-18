@@ -12,7 +12,7 @@ def generate():
     query = data.get("query", "")
 
     credentials = service_account.Credentials.from_service_account_file(
-        "2.json", scopes=["https://www.googleapis.com/auth/cloud-platform"]
+        ""/secrets/vertex/2.json", scopes=["https://www.googleapis.com/auth/cloud-platform"]
     )
 
     vertexai.init(
