@@ -5,6 +5,7 @@ from vertexai.preview.generative_models import GenerationConfig
 from google.oauth2 import service_account
 import vertexai
 
+
 import faiss
 import numpy as np
 import json
