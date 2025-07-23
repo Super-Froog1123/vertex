@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify
 from vertexai.generative_models import GenerativeModel
 from vertexai.preview.generative_models import GenerationConfig
@@ -6,7 +7,6 @@ import vertexai
 
 import faiss
 import numpy as np
-import os
 import json
 from sentence_transformers import SentenceTransformer
 
@@ -18,9 +18,9 @@ DOC_PATH = "knowledge.json"
 EMBED_PATH = "embedding.npy"
 INDEX_PATH = "faiss_index.index"
 
-# === 加载或构建知识库 ===
 def load_knowledge():
     if not os.path.exists(DOC_PATH):
+        print("❗️未找到 knowledge.json 文件")
         return []
     with open(DOC_PATH, "r", encoding="utf-8") as f:
         return json.load(f)
@@ -43,7 +43,6 @@ def load_index():
 DOCUMENTS = load_knowledge()
 INDEX = load_index()
 
-# === 构造 Prompt ===
 def build_prompt(context, query):
     return f"""你是一位专业的 Vertex AI 助手。以下是相关资料片段：
 
@@ -53,7 +52,6 @@ def build_prompt(context, query):
 
 请基于以上内容专业、准确地回答："""
 
-# === 路由 ===
 @app.route("/generate", methods=["POST"])
 def generate():
     data = request.get_json()
@@ -65,10 +63,10 @@ def generate():
     relevant_docs = [DOCUMENTS[i] for i in I[0] if i < len(DOCUMENTS)]
     context = "\n".join(relevant_docs)
 
-    # 构造 prompt
+    # Prompt 构造
     prompt = build_prompt(context, query)
 
-    # 初始化 Vertex AI
+    # Vertex AI 初始化
     credentials = service_account.Credentials.from_service_account_file(
         "/secrets/vertex-json", scopes=["https://www.googleapis.com/auth/cloud-platform"]
     )
@@ -78,7 +76,6 @@ def generate():
         credentials=credentials
     )
 
-    # Gemini 生成
     model = GenerativeModel("gemini-2.0-flash")
     config = GenerationConfig(temperature=0.7, top_p=1.0, max_output_tokens=1024)
     responses = model.generate_content(prompt, generation_config=config, stream=True)
@@ -86,5 +83,8 @@ def generate():
 
     return jsonify({"result": result})
 
+# ✅ Cloud Run 要求监听 $PORT 环境变量
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    port = int(os.environ.get("PORT", 8080))
+    print(f"✅ Flask server starting on port {port}...")
+    app.run(host="0.0.0.0", port=port)
