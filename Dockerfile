@@ -1,22 +1,18 @@
-# 使用官方 Python 镜像作为基础镜像
+# 使用官方 Python 镜像
 FROM python:3.11-slim
 
 # 设置工作目录
 WORKDIR /app
 
-# 拷贝依赖和代码
+# 安装依赖
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# 拷贝项目代码
 COPY . .
 
-# 设置 Flask 启动入口
-ENV FLASK_APP=main.py
-ENV FLASK_RUN_HOST=0.0.0.0
-ENV FLASK_RUN_PORT=8080
+# Cloud Run 会传入 PORT 环境变量，Flask 必须监听它
+ENV PORT=8080
 
-# 对外暴露端口
-EXPOSE 8080
-
-# 启动 Flask 应用
-CMD ["flask", "run"]
+# 运行你的 main.py，而不是用 flask CLI（更稳）
+CMD ["python", "main.py"]
