@@ -6,3 +6,4 @@ vertexai
 faiss-cpu
 sentence-transformers
 numpy
+gunicorn
