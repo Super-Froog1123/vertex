@@ -1,19 +1,22 @@
-# 使用官方镜像
 FROM python:3.11-slim
 
-# 设置工作目录
+# 安装基础依赖（faiss、tokenizers、torch 这些都需要）
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# 工作目录
 WORKDIR /app
 
-# 只在 requirements.txt 变动时安装依赖（加快构建）
+# 安装 Python包
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 然后再拷贝主代码
+# 复制代码
 COPY . .
 
-# 其他配置
-ENV FLASK_APP=main.py
-ENV FLASK_RUN_HOST=0.0.0.0
-ENV FLASK_RUN_PORT=8080
-EXPOSE 8080
-CMD ["flask", "run"]
+# Cloud Run 默认使用 $PORT
+ENV PORT=8080
+
+# 使用 gunicorn 而不是 flask run（🔥 必须）
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 main:app
