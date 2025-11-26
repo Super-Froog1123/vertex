@@ -4,5 +4,4 @@ google-auth
 google-auth-oauthlib
 vertexai
 faiss-cpu
-sentence-transformers
 numpy
